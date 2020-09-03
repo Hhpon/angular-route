@@ -23,9 +23,9 @@ export class CrisisDetailComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe((params) => {
-      this.crisis = this.service.getCrisis(+params.get('id'));
-      this.editName = this.crisis.name;
+    this.route.data.subscribe((data: { crisis: Crisis }) => {
+      this.crisis = data.crisis;
+      this.editName = data.crisis.name;
     });
   }
 
@@ -41,9 +41,9 @@ export class CrisisDetailComponent implements OnInit {
 
   canDeactivate(): Observable<boolean> | boolean {
     console.log('detail - canDeactivate');
-    // if (!this.crisis || this.crisis.name === this.editName) {
-    //   return true;
-    // }
+    if (!this.crisis || this.crisis.name === this.editName) {
+      return true;
+    }
     return this.dialogService.confirm('Discard changes?');
   }
 

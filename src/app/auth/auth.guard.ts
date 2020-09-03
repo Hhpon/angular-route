@@ -6,20 +6,23 @@ import {
   CanActivateChild,
   UrlTree,
   Router,
+  NavigationExtras,
+  CanLoad,
 } from '@angular/router';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
+import { Route } from '@angular/compiler/src/core';
 
 @Injectable({
   providedIn: 'root',
 })
-export class AuthGuard implements CanActivate, CanActivateChild {
+export class AuthGuard implements CanActivate, CanActivateChild, CanLoad {
   constructor(private authService: AuthService, private router: Router) {}
 
   canActivate(
     next: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
-  ): true | UrlTree {
+  ): UrlTree | boolean {
     console.log('AuthGuard#canActivate called');
     const url = state.url;
     console.log(url);
@@ -30,18 +33,32 @@ export class AuthGuard implements CanActivate, CanActivateChild {
   canActivateChild(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
-  ): true | UrlTree {
+  ): UrlTree | boolean {
     return this.canActivate(route, state);
   }
 
-  checkLogin(url: string): true | UrlTree {
+  canLoad(route: Route): UrlTree | boolean {
+    let url = '/${route.path}';
+    return this.checkLogin(url);
+  }
+
+  checkLogin(url: string): UrlTree | boolean {
     if (this.authService.isLoggedIn) {
+      console.log('auth: true');
       return true;
     }
     console.log(url);
 
     this.authService.redirectUrl = url;
 
-    return this.router.parseUrl('/login');
+    let sessionId = 123456789;
+
+    let navigationExtras: NavigationExtras = {
+      queryParams: { session_id: sessionId },
+      fragment: 'anchor',
+    };
+
+    console.log('auth: true');
+    return this.router.createUrlTree(['/login'], navigationExtras);
   }
 }
